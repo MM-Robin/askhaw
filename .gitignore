@@ -1,4 +1,26 @@
-.streamlit/secrets.toml
-__pycache__/
+# Python
+
+**pycache**/
 *.pyc
+
+# macOS
+
 .DS_Store
+
+# Streamlit
+
+.streamlit/secrets.toml
+
+# Archives
+
+*.zip
+
+# Virtual environments
+
+venv/
+.venv/
+
+# IDE
+
+.vscode/
+.idea/
