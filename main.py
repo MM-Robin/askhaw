@@ -18,7 +18,20 @@ HAW_LIGHT = "#E6F0FA"
 EMBED_MODEL = "text-embedding-3-small"
 CHAT_MODEL = "gpt-4o-mini"
 
-client = OpenAI(api_key=st.secrets.get("OPENAI_API_KEY", None))
+def get_openai_client():
+    try:
+        api_key = st.secrets.get("OPENAI_API_KEY")
+    except Exception:
+        api_key = None
+    if not api_key:
+        st.error("OpenAI API key not configured.")
+        st.markdown("Create `.streamlit/secrets.toml` in the project root with:")
+        st.code('OPENAI_API_KEY = "sk-..."', language="toml")
+        st.markdown("Then restart the app.")
+        st.stop()
+    return OpenAI(api_key=api_key)
+
+client = get_openai_client()
 
 st.set_page_config(
     page_title="AskHAW",
