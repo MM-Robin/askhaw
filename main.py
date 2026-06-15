@@ -409,20 +409,22 @@ for i, (role, message) in enumerate(st.session_state.chat_history):
 # --- FUNCTIONS ---
 def search_kb(query, lang):
     index, meta = indexes[lang]
+    records = meta["records"]
     q_embed = client.embeddings.create(model=EMBED_MODEL, input=query).data[0].embedding
     q_vec = np.array(q_embed, dtype="float32").reshape(1, -1)
     D, I = index.search(q_vec, k=5)
-    matches = [meta["texts"][i] for i in I[0] if i >= 0 and i < len(meta["texts"])]
-    return matches, D[0][0]
+    hits = [records[i] for i in I[0] if 0 <= i < len(records)]
+    matches = [hit["text"] for hit in hits]
+    return matches, D[0][0], hits
 
 def build_retrieval_query(query, chat_history):
     return query
 
 def build_messages(query, lang, chat_history):
     retrieval_query = build_retrieval_query(query, chat_history)
-    matches, score = search_kb(retrieval_query, lang)
+    matches, score, hits = search_kb(retrieval_query, lang)
     if not matches or score > 3.5:
-        return None, False
+        return None, False, []
 
     context = "\n\n".join(matches)
     persona = PERSONA
@@ -444,7 +446,7 @@ Context:
         api_role = "user" if role == "user" else "assistant"
         messages.append({"role": api_role, "content": content})
     messages.append({"role": "user", "content": query})
-    return messages, True
+    return messages, True, hits
 
 # --- FALLBACK ---
 def get_fallback(lang):
@@ -463,6 +465,36 @@ def get_fallback(lang):
         "- Reach the Admissions Office: studierendensekretariat@haw-hamburg.de / +49 40 42875 9898"
     )
 
+# --- SOURCES RENDERING ---
+def render_sources(hits):
+    if not hits:
+        return
+    seen = set()
+    unique = []
+    for h in hits:
+        url = h.get("url", "")
+        if url and url not in seen:
+            seen.add(url)
+            unique.append(h)
+    if not unique:
+        return
+    links = []
+    for h in unique:
+        title = h.get("title") or h.get("url")
+        url = h.get("url")
+        links.append(f"- [{title}]({url})")
+    st.markdown(
+        '<div style="font-size:0.8rem; color:#64748B; margin-top:0.4rem;">Sources:</div>',
+        unsafe_allow_html=True
+    )
+    st.markdown("\n".join(links))
+    with st.expander("View retrieved passages"):
+        for h in unique:
+            st.markdown(f"**{h.get('title') or h.get('url')}**")
+            st.caption(h.get("url", ""))
+            text = h.get("text", "")
+            st.write(text[:600] + ("…" if len(text) > 600 else ""))
+
 # --- CHAT INPUT ---
 def handle_prompt(prompt):
     """Process a user prompt (from chat input or chip click)."""
@@ -473,7 +505,7 @@ def handle_prompt(prompt):
     lang, _ = langid.classify(prompt)
     lang = "de" if lang == "de" else "en"
 
-    messages, valid = build_messages(prompt, lang, st.session_state.chat_history)
+    messages, valid, hits = build_messages(prompt, lang, st.session_state.chat_history)
 
     if not valid:
         response = get_fallback(lang)
@@ -488,6 +520,8 @@ def handle_prompt(prompt):
         )
         with st.chat_message("assistant", avatar=LOGO_PATH):
             response = st.write_stream(stream)
+            if "I don't have enough information" not in response:
+                render_sources(hits)
         st.session_state.chat_history.append(("assistant", response))
 
 # Handle chip-click pending prompt
