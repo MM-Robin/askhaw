@@ -1,0 +1,26 @@
+# --- Core App Framework ---
+streamlit==1.38.0
+
+# --- OpenAI ---
+openai==2.38.0
+
+# --- Vector Search ---
+faiss-cpu==1.14.2
+numpy==2.2.6
+
+# --- Data Handling ---
+pandas==2.2.3
+openpyxl==3.1.5
+
+# --- Web Scraping ---
+requests==2.32.3
+beautifulsoup4==4.12.3
+
+# --- Text Processing ---
+langid==1.1.6
+
+# --- Translation ---
+deep-translator==1.11.4
+
+# --- Utilities ---
+tqdm==4.66.5
