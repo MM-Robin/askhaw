@@ -17,8 +17,8 @@ def build_index(kb_path, index_path, meta_path):
     with open(kb_path, "r", encoding="utf-8") as f:
         kb = json.load(f)
 
-    texts = [entry["text"] for entry in kb if entry.get("text")]
-    ids = list(range(len(texts)))
+    entries = [entry for entry in kb if entry.get("text")]
+    texts = [entry["text"] for entry in entries]
 
     print(f"🔹 Embedding {len(texts)} chunks from {kb_path}...")
     embeddings = []
@@ -32,7 +32,17 @@ def build_index(kb_path, index_path, meta_path):
     index.add(embeddings)
     faiss.write_index(index, index_path)
 
-    meta = {"ids": ids, "texts": texts}
+    records = [
+        {
+            "id": i,
+            "url": entry.get("url", ""),
+            "title": entry.get("title", ""),
+            "chunk_id": entry.get("chunk_id", 0),
+            "text": entry["text"],
+        }
+        for i, entry in enumerate(entries)
+    ]
+    meta = {"records": records}
     with open(meta_path, "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)
 
