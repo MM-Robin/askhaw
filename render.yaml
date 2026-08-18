@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: askhaw
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run main.py --server.port $PORT --server.address 0.0.0.0
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false # set manually in Render dashboard

@@ -2,25 +2,30 @@
 streamlit==1.38.0
 
 # --- OpenAI ---
-openai==2.38.0
+openai>=1.0.0
 
 # --- Vector Search ---
-faiss-cpu==1.14.2
-numpy==2.2.6
+faiss-cpu==1.8.0
 
 # --- Data Handling ---
+numpy>=1.26.0
 pandas==2.2.3
-openpyxl==3.1.5
+openpyxl==3.1.5     # For reading Excel files
+json5==0.9.25
+
+# --- PDF Processing ---
+PyMuPDF==1.24.10     # for fitz
 
 # --- Web Scraping ---
 requests==2.32.3
 beautifulsoup4==4.12.3
 
-# --- Text Processing ---
+# --- Text Processing & Regex ---
 langid==1.1.6
+regex==2024.9.11
 
 # --- Translation ---
-deep-translator==1.11.4
+deep-translator==1.11.4   # replacing googletrans (stable, no async issues)
 
-# --- Utilities ---
-tqdm==4.66.5
+# --- Miscellaneous Utilities ---
+tqdm==4.66.5      # optional progress bar for long operations

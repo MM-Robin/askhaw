@@ -2,6 +2,7 @@ import streamlit as st
 import datetime
 import json
 import csv
+import os
 import numpy as np
 import faiss
 import langid
@@ -18,7 +19,9 @@ HAW_LIGHT = "#E6F0FA"
 EMBED_MODEL = "text-embedding-3-small"
 CHAT_MODEL = "gpt-4o-mini"
 
-client = OpenAI(api_key=st.secrets.get("OPENAI_API_KEY", None))
+# Support both Streamlit Cloud (st.secrets) and Render (env var)
+_openai_key = st.secrets.get("OPENAI_API_KEY", None) or os.environ.get("OPENAI_API_KEY")
+client = OpenAI(api_key=_openai_key)
 
 st.set_page_config(
     page_title="AskHAW",
