@@ -19,20 +19,22 @@ HAW_LIGHT = "#E6F0FA"
 EMBED_MODEL = "text-embedding-3-small"
 CHAT_MODEL = "gpt-4o-mini"
 
-# Support both Streamlit Cloud (st.secrets) and Render (env var)
-try:
-    _openai_key = st.secrets.get("OPENAI_API_KEY", None)
-except FileNotFoundError:
-    _openai_key = None
-_openai_key = _openai_key or os.environ.get("OPENAI_API_KEY")
-client = OpenAI(api_key=_openai_key)
-
+# Must be the very first Streamlit command
 st.set_page_config(
     page_title="AskHAW",
     page_icon="🎓",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Support both Streamlit Cloud (st.secrets) and Render (env var)
+# set_page_config must come before any st.secrets access
+try:
+    _openai_key = st.secrets.get("OPENAI_API_KEY", None)
+except FileNotFoundError:
+    _openai_key = None
+_openai_key = _openai_key or os.environ.get("OPENAI_API_KEY")
+client = OpenAI(api_key=_openai_key)
 
 # --- LOAD INDEXES ---
 @st.cache_resource
