@@ -3,6 +3,7 @@ import datetime
 import json
 import csv
 import os
+import toml
 import numpy as np
 import faiss
 import langid
@@ -27,14 +28,18 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Support both Streamlit Cloud (st.secrets) and Render (env var)
-# set_page_config must come before any st.secrets access
-try:
-    _openai_key = st.secrets.get("OPENAI_API_KEY", None)
-except FileNotFoundError:
-    _openai_key = None
-_openai_key = _openai_key or os.environ.get("OPENAI_API_KEY")
-client = OpenAI(api_key=_openai_key)
+# Read API key: env var (Render) → secrets.toml (local dev)
+def _get_api_key():
+    key = os.environ.get("OPENAI_API_KEY")
+    if key:
+        return key
+    try:
+        secrets = toml.load(".streamlit/secrets.toml")
+        return secrets.get("OPENAI_API_KEY")
+    except Exception:
+        return None
+
+client = OpenAI(api_key=_get_api_key())
 
 # --- LOAD INDEXES ---
 @st.cache_resource
